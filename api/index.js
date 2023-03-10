@@ -1,9 +1,14 @@
 import { parse } from "fast-csv";
-import { construirResposta } from "./utils.js";
+import { construirResposta, obterBoundary, parsearMultipartBody } from "./utils.js";
 
 export const cadastrarAlunos = async (evento) => {
   try {
-    const dadosCsv = evento.body;
+
+    const boundary = obterBoundary(evento);
+
+    const parts = parsearMultipartBody(evento.body, boundary);
+    
+    const dadosCsv = parts[0].body;
 
     const resultado = await new Promise((resolver, rejeitar) => {
       const stream = parse({ headers: ["nome", "matricula"], renameHeaders: true })
@@ -26,6 +31,7 @@ export const cadastrarAlunos = async (evento) => {
 
     return construirResposta(201, resultado);
   } catch (erro) {
+    console.log(erro);
     return construirResposta(500, { message: erro.message });
   }
 };
