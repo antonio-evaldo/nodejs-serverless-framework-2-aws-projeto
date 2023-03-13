@@ -9,6 +9,4 @@ function construirResposta(status, body, headers) {
   }
 }
 
-export {
-  construirResposta
-};
+module.exports = { construirResposta }

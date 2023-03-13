@@ -1,19 +1,27 @@
-import { parse } from "fast-csv";
-import { construirResposta } from "./utils.js";
+const { parse } = require("fast-csv");
+const { construirResposta } = require("./utils");
 
-export const cadastrarAlunos = async (evento) => {
+module.exports.cadastrarAlunos = async (evento) => {
   try {
     const dadosCsv = evento.body;
 
+    console.log(dadosCsv);
+
     const resultado = await new Promise((resolver, rejeitar) => {
+      const alunos = [];
+
       const stream = parse({ headers: ["nome", "matricula"], renameHeaders: true })
-      .on("error", (erro) => rejeitar(erro))
       .on("data", (aluno) => {
         console.log(aluno);
+        alunos.push(aluno);
         // Chamar API para cadastrar aluno...
       })
+      .on("error", (erro) => rejeitar(erro))
       .on("end", (linhasConvertidas) => {
-        resolver({ message: `Conversão realizada com sucesso: ${linhasConvertidas} linhas foram convertidas.` })
+        resolver({
+          message: `Conversão realizada com sucesso: ${linhasConvertidas} linhas foram convertidas.`,
+          alunos
+        })
       });
 
       stream.write(dadosCsv);
@@ -26,6 +34,9 @@ export const cadastrarAlunos = async (evento) => {
 
     return construirResposta(201, resultado);
   } catch (erro) {
-    return construirResposta(500, { message: erro.message });
+    return construirResposta(500, {
+      message: erro.message,
+      erro
+    });
   }
 };
