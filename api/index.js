@@ -1,24 +1,32 @@
-import { parse } from "fast-csv";
-import { construirResposta, obterBoundary, parsearMultipartBody } from "./utils.js";
+const { parse } = require("fast-csv");
+const { construirResposta } = require("./utils");
+const aws = require("aws-sdk");
 
-export const cadastrarAlunos = async (evento) => {
+module.exports.cadastrarAlunos = async (evento) => {
   try {
+    const s3 = new aws.S3();
 
-    const boundary = obterBoundary(evento);
+    const Bucket = evento.Records[0].s3.bucket.name;
+    const Key = decodeURIComponent(evento.Records[0].s3.object.key.replace(/\+/g, ' '));
+    const objetoBucket = await s3.getObject({ Bucket, Key }).promise();
 
-    const parts = parsearMultipartBody(evento.body, boundary);
-    
-    const dadosCsv = parts[0].body;
+    const dadosCsv = objetoBucket.Body.toString("utf-8");
 
     const resultado = await new Promise((resolver, rejeitar) => {
+      const alunos = [];
+
       const stream = parse({ headers: ["nome", "matricula"], renameHeaders: true })
       .on("error", (erro) => rejeitar(erro))
       .on("data", (aluno) => {
+        alunos.push(aluno);
         console.log(aluno);
         // Chamar API para cadastrar aluno...
       })
       .on("end", (linhasConvertidas) => {
-        resolver({ message: `Conversão realizada com sucesso: ${linhasConvertidas} linhas foram convertidas.` })
+        resolver({
+          message: `Conversão realizada com sucesso: ${linhasConvertidas} linhas foram convertidas.`,
+          alunos
+        })
       });
 
       stream.write(dadosCsv);
@@ -32,6 +40,9 @@ export const cadastrarAlunos = async (evento) => {
     return construirResposta(201, resultado);
   } catch (erro) {
     console.log(erro);
-    return construirResposta(500, { message: erro.message });
+    return construirResposta(500, {
+      message: erro.message,
+      erro
+    });
   }
 };

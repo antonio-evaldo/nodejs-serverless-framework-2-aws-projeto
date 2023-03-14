@@ -3,17 +3,29 @@ app: escola-serverless
 service: api
 frameworkVersion: '3'
 
+custom:
+  nomeBucketCsv: alunos-csv
+
 provider:
   name: aws
   runtime: nodejs18.x
+  iam:
+    role:
+      statements:
+        # Allow functions to read objects in a bucket
+        - Effect: Allow
+          Action:
+            - 's3:GetObject'
+          Resource:
+            - 'arn:aws:s3:::${self:custom.nomeBucketCsv}/*'
 
 functions:
   api:
     handler: api/index.cadastrarAlunos
     events:
-      - httpApi:
-          path: /admin/alunos_batch
-          method: post
+      - s3:
+          bucket: ${self:custom.nomeBucketCsv}
+          event: s3:ObjectCreated:*
 
 plugins:
   - serverless-offline
