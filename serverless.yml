@@ -20,8 +20,8 @@ provider:
             - 'arn:aws:s3:::${self:custom.nomeBucketCsv}/*'
 
 functions:
-  api:
-    handler: api/index.cadastrarAlunos
+  cadastrarAlunos:
+    handler: api/cadastrarAlunos.index
     events:
       - s3:
           bucket: ${self:custom.nomeBucketCsv}

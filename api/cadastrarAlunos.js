@@ -1,7 +1,7 @@
 const { parse } = require("fast-csv");
 const aws = require("aws-sdk");
 
-module.exports.cadastrarAlunos = async (evento) => {
+module.exports.index = async (evento) => {
   try {
     const s3 = new aws.S3();
 
