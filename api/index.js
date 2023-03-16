@@ -1,6 +1,6 @@
 const { S3Client, PutObjectCommand, GetObjectCommand } = require("@aws-sdk/client-s3");
 const { readFile } = require("fs/promises");
-const { parse } = require("fast-csv");
+const { processaCsv } = require("./processaCsv");
 
 module.exports.simulandoUploadDeBucket = async () => {
   try {
@@ -50,27 +50,7 @@ module.exports.cadastrarAlunos = async (evento) => {
 
     // const dadosCsv = objetoBucket.Body.toString("utf-8");
 
-    const resultado = await new Promise((resolver, rejeitar) => {
-      const alunosPromessas = [];
-
-      const stream = parse({ headers: ["nome", "matricula"], renameHeaders: true })
-        .on("error", (erro) => rejeitar(erro))
-        .on("data", (aluno) => {
-          const promessa = fetch("http://ecs-django-186565849.us-east-1.elb.amazonaws.com/alunos", {
-            method: "POST",
-            body: JSON.stringify(aluno),
-            headers: { 'Content-Type': 'application/json' }
-          })
-
-          alunosPromessas.push(promessa);
-        })
-        .on("end", () => {
-          resolver(alunosPromessas);
-        });
-
-      stream.write(dadosCsv);
-      stream.end();
-    });
+    const resultado = await processaCsv(dadosCsv);
 
     if (Array.isArray(resultado)) {
       const alunos = await Promise.all(resultado);
