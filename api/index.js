@@ -40,8 +40,6 @@ module.exports.cadastrarAlunos = async (evento) => {
         message: `${resultado.length} alunos foram cadastrados.`,
         alunos
       });
-
-      return;
     } else {
       console.log(resultado);
     }
