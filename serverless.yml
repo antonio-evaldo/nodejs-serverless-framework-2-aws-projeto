@@ -5,10 +5,13 @@ frameworkVersion: '3'
 
 custom:
   nomeBucketCsv: alunos-csv
+  host: localhost
+  directory: /temp
 
 provider:
   name: aws
   runtime: nodejs18.x
+  stage: prod
   iam:
     role:
       statements:
@@ -19,13 +22,28 @@ provider:
           Resource:
             - 'arn:aws:s3:::${self:custom.nomeBucketCsv}/*'
 
+resources:
+  Resources:
+    NewResource:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: bucket-local
+
 functions:
+  simulandoUploadDeBucket:
+    handler: api/index.simulandoUploadDeBucket
+    events:
+      - httpApi:
+          method: post
+          path: /alunos/batch
+
   cadastrarAlunos:
-    handler: api/cadastrarAlunos.index
+    handler: api/index.cadastrarAlunos
     events:
       - s3:
-          bucket: ${self:custom.nomeBucketCsv}
+          bucket: bucket-local
           event: s3:ObjectCreated:*
 
 plugins:
   - serverless-offline
+  - serverless-s3-local
