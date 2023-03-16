@@ -31,14 +31,14 @@ resources:
 
 functions:
   simulandoUploadDeBucket:
-    handler: api/index.simulandoUploadDeBucket
+    handler: api/bucket-local/index.simulandoUploadDeBucket
     events:
       - httpApi:
           method: post
           path: /alunos/batch
 
   cadastrarAlunos:
-    handler: api/index.cadastrarAlunos
+    handler: api/bucket-local/index.cadastrarAlunos
     events:
       - s3:
           bucket: bucket-local

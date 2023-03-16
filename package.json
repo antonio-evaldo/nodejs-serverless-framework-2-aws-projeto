@@ -1,7 +1,6 @@
 {
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.292.0",
-    "csv-parse": "^5.3.6",
+    "aws-sdk": "^2.1337.0",
     "fast-csv": "^4.3.6"
   },
   "devDependencies": {
