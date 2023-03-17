@@ -1,5 +1,6 @@
 const AWS = require("aws-sdk");
 const { readFile } = require("fs/promises");
+const path = require('path');
 const { processaCsv } = require("../processaCsv");
 
 module.exports.simulandoUploadDeBucket = async () => {
@@ -11,7 +12,9 @@ module.exports.simulandoUploadDeBucket = async () => {
       endpoint: new AWS.Endpoint("http://localhost:4569"),
     });
 
-    const dadosCsv = await readFile("../cadastro_usuarios_1_aluno.csv", "utf-8");
+    const caminhoArquivoCsv = path.join(__dirname, "cadastro_usuarios_1_aluno.csv");
+
+    const dadosCsv = await readFile(caminhoArquivoCsv, "utf-8");
 
     const resultado = await new Promise((resolver, rejeitar) => {
       S3.putObject({
@@ -32,6 +35,7 @@ module.exports.simulandoUploadDeBucket = async () => {
       body: JSON.stringify(resultado)
     }
   } catch (erro) {
+    console.log(erro);
     return {
       statusCode: erro.statusCode || 500,
       headers: { 'Content-Type': 'application/json' },
