@@ -36,14 +36,29 @@ functions:
       - httpApi:
           method: post
           path: /alunos/batch
+    enabled: false
 
-  cadastrarAlunos:
+  cadastrarAlunosDoBucketLocal:
     handler: api/bucket-local/index.cadastrarAlunos
     events:
       - s3:
           bucket: bucket-local
           event: s3:ObjectCreated:*
+    enabled: false
+
+  cadastrarAlunos:
+    handler: api/bucket-aws/index.cadastrarAlunos
+    events:
+      - s3:
+          bucket: ${self:custom.nomeBucketCsv}
+          event: s3:ObjectCreated:*
+
+package: 
+  exclude:
+    - simulandoUploadDeBucket
+    - cadastrarAlunosDoBucketLocal
 
 plugins:
   - serverless-offline
   - serverless-s3-local
+  - serverless-disable-functions

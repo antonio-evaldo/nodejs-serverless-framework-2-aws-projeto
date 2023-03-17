@@ -1,13 +1,15 @@
 const AWS = require("aws-sdk");
-const { readFile } = require("fs/promises");
 const { processaCsv } = require("../processaCsv");
 
 module.exports.cadastrarAlunos = async (evento) => {
   try {
-    const nomeBucket = evento.Records[0].s3.bucket.name;
-    const chaveBucket = decodeURIComponent(evento.Records[0].s3.object.key.replace(/\+/g, ' '));
+    const Bucket = evento.Records[0].s3.bucket.name;
+    const Key = decodeURIComponent(evento.Records[0].s3.object.key.replace(/\+/g, ' '));
+    
+    const s3 = new AWS.S3();
+    const objetoBucket = await s3.getObject({ Bucket, Key }).promise();
 
-    const dadosCsv = await readFile(`./buckets/${nomeBucket}/${chaveBucket}._S3rver_object`, "utf-8");
+    const dadosCsv = objetoBucket.Body.toString("utf-8");
 
     const resultado = await processaCsv(dadosCsv);
 
