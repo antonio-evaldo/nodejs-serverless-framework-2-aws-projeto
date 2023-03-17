@@ -30,7 +30,7 @@ functions:
     handler: api/bucket-local/index.cadastrarAlunos
     events:
       - s3:
-          bucket: bucket-local
+          bucket: alunos-csv-local
           event: s3:ObjectCreated:*
     enabled: false
 

@@ -14,7 +14,7 @@ function criaBucketLocalComCsv(dadosCsv) {
     });
 
     S3.putObject({
-      Bucket: "bucket-local",
+      Bucket: "alunos-csv-local",
       Key: "1234",
       Body: Buffer.from(dadosCsv)
     }, (erro, dados) => {
