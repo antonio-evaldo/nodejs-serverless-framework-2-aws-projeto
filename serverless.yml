@@ -3,11 +3,6 @@ app: escola-serverless
 service: api
 frameworkVersion: '3'
 
-custom:
-  nomeBucketCsv: alunos-csv
-  host: localhost
-  directory: /temp
-
 provider:
   name: aws
   runtime: nodejs18.x
@@ -20,14 +15,7 @@ provider:
           Action:
             - 's3:GetObject'
           Resource:
-            - 'arn:aws:s3:::${self:custom.nomeBucketCsv}/*'
-
-resources:
-  Resources:
-    NewResource:
-      Type: AWS::S3::Bucket
-      Properties:
-        BucketName: bucket-local
+            - 'arn:aws:s3:::alunos-csv/*'
 
 functions:
   simulandoUploadDeBucket:
@@ -50,7 +38,7 @@ functions:
     handler: api/bucket-aws/index.cadastrarAlunos
     events:
       - s3:
-          bucket: ${self:custom.nomeBucketCsv}
+          bucket: alunos-csv
           event: s3:ObjectCreated:*
 
 package: 
