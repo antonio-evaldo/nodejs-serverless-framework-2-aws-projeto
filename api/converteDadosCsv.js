@@ -5,13 +5,9 @@ async function converteDadosCsv(dadosCsv) {
     const alunos = [];
 
     const stream = parse({ headers: ["nome", "matricula"], renameHeaders: true })
-      .on("data", (aluno) => {
-        alunos.push(aluno);
-      })
+      .on("data", (aluno) => alunos.push(aluno))
       .on("error", () => rejeitar(new Error("Erro na conversão do CSV.")))
-      .on("end", () => {
-        resolver(alunos);
-      });
+      .on("end", () => resolver(alunos));
 
     stream.write(dadosCsv);
     stream.end();
