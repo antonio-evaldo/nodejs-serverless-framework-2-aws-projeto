@@ -1,7 +1,7 @@
 const AWS = require("aws-sdk");
 const { readFile } = require("fs/promises");
 const path = require('path');
-const { processaCsv } = require("../processaCsv");
+const { converteDadosCsv } = require("../converteDadosCsv");
 const { cadastrarAlunosNoBd } = require("../cadastrarAlunosNoBd");
 
 function criaBucketLocalComCsv(dadosCsv) {
@@ -26,7 +26,7 @@ function criaBucketLocalComCsv(dadosCsv) {
 
 module.exports.simulandoUploadDeBucket = async () => {
   try {
-    const caminhoArquivoCsv = path.join(__dirname, "cadastro_usuarios.csv");
+    const caminhoArquivoCsv = path.join(__dirname, "cadastro_usuarios_1_aluno.csv");
     const dadosCsv = await readFile(caminhoArquivoCsv, "utf-8");
 
     const resultado = await criaBucketLocalComCsv(dadosCsv);
@@ -55,15 +55,13 @@ module.exports.cadastrarAlunos = async (evento) => {
 
     const dadosCsv = await readFile(`./buckets/${nomeBucket}/${chaveBucket}._S3rver_object`, "utf-8");
 
-    const resultados = await processaCsv(dadosCsv);
+    const alunos = await converteDadosCsv(dadosCsv);
 
-    if (resultados instanceof Error) throw resultados;
-
-    await cadastrarAlunosNoBd(resultados);
+    await cadastrarAlunosNoBd(alunos);
 
     console.log({
-      message: `${resultados.length} alunos foram cadastrados.`,
-      alunos: resultados
+      message: `${alunos.length} alunos foram cadastrados.`,
+      alunos
     });
   } catch (erro) {
     console.log(erro);

@@ -1,7 +1,7 @@
 const { parse } = require("fast-csv");
 
-function processaCsv(dadosCsv) {
-  return new Promise((resolver, rejeitar) => {
+async function converteDadosCsv(dadosCsv) {
+  const resultados = await new Promise((resolver, rejeitar) => {
     const alunos = [];
 
     const stream = parse({ headers: ["nome", "matricula"], renameHeaders: true })
@@ -16,6 +16,10 @@ function processaCsv(dadosCsv) {
     stream.write(dadosCsv);
     stream.end();
   });
+
+  if (resultados instanceof Error) throw resultados;
+
+  return resultados;
 }
 
-module.exports = { processaCsv };
+module.exports = { converteDadosCsv };
