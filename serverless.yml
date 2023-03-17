@@ -41,11 +41,6 @@ functions:
           bucket: alunos-csv
           event: s3:ObjectCreated:*
 
-package: 
-  exclude:
-    - simulandoUploadDeBucket
-    - cadastrarAlunosDoBucketLocal
-
 plugins:
   - serverless-offline
   - serverless-s3-local
