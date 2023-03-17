@@ -40,6 +40,8 @@ functions:
       - s3:
           bucket: alunos-csv
           event: s3:ObjectCreated:*
+          rules:
+            - suffix: .csv
 
 plugins:
   - serverless-offline
