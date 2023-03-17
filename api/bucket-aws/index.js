@@ -1,5 +1,6 @@
 const AWS = require("aws-sdk");
 const { processaCsv } = require("../processaCsv");
+const { cadastrarAlunosNoBd } = require("../cadastrarAlunosNoBd");
 
 module.exports.cadastrarAlunos = async (evento) => {
   try {
@@ -11,18 +12,16 @@ module.exports.cadastrarAlunos = async (evento) => {
 
     const dadosCsv = objetoBucket.Body.toString("utf-8");
 
-    const resultado = await processaCsv(dadosCsv);
+    const resultados = await processaCsv(dadosCsv);
 
-    if (Array.isArray(resultado)) {
-      const alunos = await Promise.all(resultado);
+    if (resultados instanceof Error) throw resultados;
 
-      console.log({
-        message: `${resultado.length} alunos foram cadastrados.`,
-        alunos
-      });
-    } else {
-      console.log(resultado);
-    }
+    await cadastrarAlunosNoBd(resultados);
+
+    console.log({
+      message: `${resultados.length} alunos foram cadastrados.`,
+      alunos: resultados
+    });
   } catch (erro) {
     console.log(erro);
   }

@@ -2,37 +2,41 @@ const AWS = require("aws-sdk");
 const { readFile } = require("fs/promises");
 const path = require('path');
 const { processaCsv } = require("../processaCsv");
+const { cadastrarAlunosNoBd } = require("../cadastrarAlunosNoBd");
 
-module.exports.simulandoUploadDeBucket = async () => {
-  try {
+function criaBucketLocalComCsv(dadosCsv) {
+  return new Promise((resolver, rejeitar) => {
     const S3 = new AWS.S3({
       s3ForcePathStyle: true,
-      accessKeyId: "S3RVER", // This specific key is required when working offline
+      accessKeyId: "S3RVER",
       secretAccessKey: "S3RVER",
       endpoint: new AWS.Endpoint("http://localhost:4569"),
     });
 
-    const caminhoArquivoCsv = path.join(__dirname, "cadastro_usuarios_1_aluno.csv");
+    S3.putObject({
+      Bucket: "bucket-local",
+      Key: "1234",
+      Body: Buffer.from(dadosCsv)
+    }, (erro, dados) => {
+      if (erro) rejeitar(erro)
+      else resolver(dados);
+    })
+  });
+}
 
+module.exports.simulandoUploadDeBucket = async () => {
+  try {
+    const caminhoArquivoCsv = path.join(__dirname, "cadastro_usuarios.csv");
     const dadosCsv = await readFile(caminhoArquivoCsv, "utf-8");
 
-    const resultado = await new Promise((resolver, rejeitar) => {
-      S3.putObject({
-        Bucket: "bucket-local",
-        Key: "1234",
-        Body: Buffer.from(dadosCsv)
-      }, (erro, dados) => {
-        if (erro) rejeitar(erro)
-        else resolver(dados);
-      })
-    });
+    const resultado = await criaBucketLocalComCsv(dadosCsv);
 
-    let statusCode = resultado instanceof Error ? 500 : 201;
-    
+    if (resultado instanceof Error) throw resultado;
+
     return {
-      statusCode,
+      statusCode: 201,
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(resultado)
+      body: JSON.stringify({ message: "Upload no Bucket local feito com sucesso." })
     }
   } catch (erro) {
     console.log(erro);
@@ -51,18 +55,16 @@ module.exports.cadastrarAlunos = async (evento) => {
 
     const dadosCsv = await readFile(`./buckets/${nomeBucket}/${chaveBucket}._S3rver_object`, "utf-8");
 
-    const resultado = await processaCsv(dadosCsv);
+    const resultados = await processaCsv(dadosCsv);
 
-    if (Array.isArray(resultado)) {
-      const alunos = await Promise.all(resultado);
+    if (resultados instanceof Error) throw resultados;
 
-      console.log({
-        message: `${resultado.length} alunos foram cadastrados.`,
-        alunos
-      });
-    } else {
-      console.log(resultado);
-    }
+    await cadastrarAlunosNoBd(resultados);
+
+    console.log({
+      message: `${resultados.length} alunos foram cadastrados.`,
+      alunos: resultados
+    });
   } catch (erro) {
     console.log(erro);
   }
