@@ -7,10 +7,10 @@ provider:
   name: aws
   runtime: nodejs18.x
   stage: prod
+  # Permitir que as funções Lambda do seu usuário IAM da AWS leiam o bucket `alunos-csv`:
   iam:
     role:
       statements:
-        # Allow functions to read objects in a bucket
         - Effect: Allow
           Action:
             - 's3:GetObject'
@@ -36,6 +36,16 @@ resources:
                 - "*"
 
 functions:
+  # Uma função que reage a um evento do S3 indica para o Serverless Framework automaticamente criar o Bucket S3 na AWS ao realizar o deploy do projeto.
+  cadastrarAlunos:
+    handler: api/bucket-aws/index.cadastrarAlunos
+    events:
+      - s3:
+          bucket: alunos-csv
+          event: s3:ObjectCreated:*
+          rules:
+            - suffix: .csv
+
   simulandoUploadDeBucket:
     handler: api/bucket-local/index.simulandoUploadDeBucket
     events:
@@ -51,15 +61,6 @@ functions:
           bucket: alunos-csv-local
           event: s3:ObjectCreated:*
     enabled: false
-
-  cadastrarAlunos:
-    handler: api/bucket-aws/index.cadastrarAlunos
-    events:
-      - s3:
-          bucket: alunos-csv
-          event: s3:ObjectCreated:*
-          rules:
-            - suffix: .csv
 
 plugins:
   - serverless-offline
