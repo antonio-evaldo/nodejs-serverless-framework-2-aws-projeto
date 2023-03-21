@@ -17,6 +17,24 @@ provider:
           Resource:
             - 'arn:aws:s3:::alunos-csv/*'
 
+# As `Properties` abaixo serão adicionadas ao recurso `S3BucketAlunoscsv` que já será criado pelo Serverless Framework
+# As propriedades de CORS abaixo permitem que domínios externos, como o site do Front-end, possam acessar o bucket `alunos-csv`.
+resources:
+  extensions:
+    S3BucketAlunoscsv:
+      Properties:
+        CorsConfiguration:
+          CorsRules:
+            - AllowedMethods:
+                - POST
+                - PUT
+                - GET
+                - HEAD
+              AllowedOrigins:
+                - "*"
+              AllowedHeaders:
+                - "*"
+
 functions:
   simulandoUploadDeBucket:
     handler: api/bucket-local/index.simulandoUploadDeBucket
